@@ -1,9 +1,7 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Square, Send } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { X } from 'lucide-react';
 import QuickSaveTab from './QuickSaveTab';
-import ClaimItTab from './ClaimItTab';
 
 interface IdeaModalProps {
   isOpen: boolean;
@@ -11,7 +9,6 @@ interface IdeaModalProps {
 }
 
 const IdeaModal = ({ isOpen, onClose }: IdeaModalProps) => {
-  const [activeTab, setActiveTab] = useState<'quick' | 'claim'>('quick');
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,28 +49,7 @@ const IdeaModal = ({ isOpen, onClose }: IdeaModalProps) => {
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-hair border-gray-500">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('quick')}
-              className={`pb-2 border-b-2 transition-all duration-150 ease-in-out ${
-                activeTab === 'quick'
-                  ? 'border-black dark:border-white text-black dark:text-white font-medium'
-                  : 'border-transparent text-gray-500 font-light hover:text-black dark:hover:text-white'
-              }`}
-            >
-              Quick Save
-            </button>
-            <button
-              onClick={() => setActiveTab('claim')}
-              className={`pb-2 border-b-2 transition-all duration-150 ease-in-out ${
-                activeTab === 'claim'
-                  ? 'border-black dark:border-white text-black dark:text-white font-medium'
-                  : 'border-transparent text-gray-500 font-light hover:text-black dark:hover:text-white'
-              }`}
-            >
-              Claim It
-            </button>
-          </div>
+          <h2 className="text-lg font-medium">Log New Idea</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-900 rounded transition-all duration-150 ease-in-out"
@@ -84,11 +60,7 @@ const IdeaModal = ({ isOpen, onClose }: IdeaModalProps) => {
 
         {/* Content */}
         <div className="p-4">
-          {activeTab === 'quick' ? (
-            <QuickSaveTab onSuccess={onClose} />
-          ) : (
-            <ClaimItTab onSuccess={onClose} />
-          )}
+          <QuickSaveTab onSuccess={onClose} />
         </div>
       </div>
     </div>

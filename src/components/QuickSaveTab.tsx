@@ -3,6 +3,8 @@ import { useState, useRef } from 'react';
 import { Mic, Square, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrentUser } from '@/utils/auth';
+import VoiceRecorder from './claim-it/VoiceRecorder';
 
 interface QuickSaveTabProps {
   onSuccess: () => void;
@@ -10,115 +12,67 @@ interface QuickSaveTabProps {
 
 const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
   const [idea, setIdea] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
+  const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        chunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/wav' });
-        await transcribeAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      toast({
-        title: "Error",
-        description: "Could not access microphone",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const transcribeAudio = async (audioBlob: Blob) => {
-    setIsLoading(true);
-    try {
-      console.log('Starting transcription with ElevenLabs...');
-      
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.wav');
-
-      const { data, error } = await supabase.functions.invoke('elevenlabs-transcribe', {
-        body: formData,
-      });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error('Transcription failed');
-      }
-
-      if (data && data.transcript) {
-        console.log('Transcription successful:', data.transcript);
-        setIdea(data.transcript);
-        toast({
-          title: "Success",
-          description: "Audio transcribed successfully",
-        });
-      } else {
-        throw new Error('No transcript received');
-      }
-    } catch (error) {
-      console.error('Transcription error:', error);
-      toast({
-        title: "Error",
-        description: "Could not transcribe audio",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const existingCategories = [
+    'Art & Design',
+    'Technology', 
+    'Business',
+    'Creative Writing',
+    'Music',
+    'Product Ideas',
+    'Content Creation'
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idea.trim()) return;
+    
+    if (!idea.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an idea",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      toast({
+        title: "Error", 
+        description: "You need to be logged in to save ideas",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsLoading(true);
+    
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('ideas')
-        .insert([
-          {
-            idea: idea.trim(),
-            name: null,
-            category: null,
-          }
-        ]);
+        .insert({
+          idea: idea.trim(),
+          name: currentUser,
+          category: category || null,
+          status: 'proposed',
+          upvotes: []
+        });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Saved ✓",
-        description: "Idea logged successfully",
+        description: "Your idea has been logged successfully",
       });
+      
       setIdea('');
+      setCategory('');
       onSuccess();
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Error saving idea:', error);
       toast({
         title: "Error",
         description: "Could not save idea",
@@ -129,54 +83,46 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
     }
   };
 
+  const handleTranscription = (text: string) => {
+    setIdea(text);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Idea input */}
       <div>
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           placeholder="What's your idea?"
-          className="w-full h-32 p-3 border-hair border-gray-500 rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out"
+          className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out resize-none"
+          rows={4}
           disabled={isLoading}
         />
       </div>
 
-      {/* Voice controls */}
-      <div className="flex items-center justify-center">
-        <span className="text-sm text-gray-500 font-light mr-3">or</span>
-        <button
-          type="button"
-          onClick={isRecording ? stopRecording : startRecording}
+      <VoiceRecorder onTranscription={handleTranscription} isLoading={isLoading} />
+
+      <div className="relative">
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out"
           disabled={isLoading}
-          className={`p-3 rounded-lg border-hair transition-all duration-150 ease-in-out ${
-            isRecording
-              ? 'bg-red-500 text-white border-red-500 animate-pulse-record'
-              : 'border-gray-500 hover:border-black dark:hover:border-white'
-          }`}
         >
-          {isRecording ? (
-            <Square size={16} strokeWidth={1} />
-          ) : (
-            <Mic size={16} strokeWidth={1} />
-          )}
-        </button>
+          <option value="">Category (optional)</option>
+          {existingCategories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
-        disabled={!idea.trim() || isLoading}
-        className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        disabled={isLoading || !idea.trim()}
+        className="w-full btn-primary flex items-center justify-center gap-2"
       >
-        {isLoading ? (
-          'Saving...'
-        ) : (
-          <>
-            <Send size={16} strokeWidth={1} />
-            Quick Save
-          </>
-        )}
+        <Send size={16} strokeWidth={1} />
+        {isLoading ? 'Saving...' : 'Save Idea'}
       </button>
     </form>
   );

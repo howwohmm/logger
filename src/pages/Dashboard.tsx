@@ -4,6 +4,7 @@ import IdeasTable from '@/components/dashboard/IdeasTable';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import LoadingSpinner from '@/components/dashboard/LoadingSpinner';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { useIdeas } from '@/hooks/useIdeas';
 import { useIdeasFilter } from '@/hooks/useIdeasFilter';
 
@@ -37,26 +38,28 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <DashboardHeader />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-background text-foreground">
+        <DashboardHeader />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <DashboardStats ideas={ideas} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <DashboardStats ideas={ideas} />
 
-        <DashboardFilters 
-          ideas={ideas}
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
+          <DashboardFilters 
+            ideas={ideas}
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
 
-        <IdeasTable 
-          ideas={filteredIdeas}
-          onStatusUpdate={updateIdeaStatus}
-          onUpvoteUpdate={updateIdeaUpvotes}
-          onDelete={deleteIdea}
-        />
+          <IdeasTable 
+            ideas={filteredIdeas}
+            onStatusUpdate={updateIdeaStatus}
+            onUpvoteUpdate={updateIdeaUpvotes}
+            onDelete={deleteIdea}
+          />
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 };
 
