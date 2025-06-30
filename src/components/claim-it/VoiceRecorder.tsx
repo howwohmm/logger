@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Mic, Square } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceRecorderProps {
   onTranscription: (text: string) => void;
@@ -52,19 +53,29 @@ const VoiceRecorder = ({ onTranscription, isLoading }: VoiceRecorderProps) => {
 
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
+      console.log('Starting transcription with ElevenLabs...');
+      
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
 
-      const response = await fetch('/api/transcribe', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('elevenlabs-transcribe', {
         body: formData,
       });
 
-      if (response.ok) {
-        const { transcript } = await response.json();
-        onTranscription(transcript);
-      } else {
+      if (error) {
+        console.error('Supabase function error:', error);
         throw new Error('Transcription failed');
+      }
+
+      if (data && data.transcript) {
+        console.log('Transcription successful:', data.transcript);
+        onTranscription(data.transcript);
+        toast({
+          title: "Success",
+          description: "Audio transcribed successfully",
+        });
+      } else {
+        throw new Error('No transcript received');
       }
     } catch (error) {
       console.error('Transcription error:', error);

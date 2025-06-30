@@ -55,19 +55,29 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
   const transcribeAudio = async (audioBlob: Blob) => {
     setIsLoading(true);
     try {
+      console.log('Starting transcription with ElevenLabs...');
+      
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
 
-      const response = await fetch('/api/transcribe', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('elevenlabs-transcribe', {
         body: formData,
       });
 
-      if (response.ok) {
-        const { transcript } = await response.json();
-        setIdea(transcript);
-      } else {
+      if (error) {
+        console.error('Supabase function error:', error);
         throw new Error('Transcription failed');
+      }
+
+      if (data && data.transcript) {
+        console.log('Transcription successful:', data.transcript);
+        setIdea(data.transcript);
+        toast({
+          title: "Success",
+          description: "Audio transcribed successfully",
+        });
+      } else {
+        throw new Error('No transcript received');
       }
     } catch (error) {
       console.error('Transcription error:', error);
