@@ -46,6 +46,15 @@ const MobileIdeaCard = ({ idea, onStatusUpdate, onUpvoteUpdate, onDelete }: Mobi
     }
   };
 
+  const handleDeleteWithErrorHandling = async (ideaId: string) => {
+    try {
+      await onDelete(ideaId);
+    } catch (error) {
+      // Error handling is now done in the ActionsCell component
+      console.error('Delete error in mobile card:', error);
+    }
+  };
+
   return (
     <>
       <div className="bg-background border border-gray-200 dark:border-gray-800 rounded-lg p-4 space-y-3">
@@ -100,7 +109,7 @@ const MobileIdeaCard = ({ idea, onStatusUpdate, onUpvoteUpdate, onDelete }: Mobi
             <ActionsCell 
               idea={idea}
               onEdit={setEditingIdea}
-              onDelete={onDelete}
+              onDelete={handleDeleteWithErrorHandling}
             />
           </div>
         </div>

@@ -108,7 +108,14 @@ export const useIdeas = () => {
         .delete()
         .eq('id', ideaId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete error from Supabase:', error);
+        // Check if it's a permission error
+        if (error.message.includes('policy')) {
+          throw new Error('You do not have permission to delete this idea. Only Varsha and Ohm can delete ideas.');
+        }
+        throw error;
+      }
 
       setIdeas(prev => prev.filter(idea => idea.id !== ideaId));
       
@@ -118,11 +125,13 @@ export const useIdeas = () => {
       });
     } catch (error) {
       console.error('Error deleting idea:', error);
+      const errorMessage = error instanceof Error ? error.message : "Could not delete idea";
       toast({
         title: "Error",
-        description: "Could not delete idea",
+        description: errorMessage,
         variant: "destructive",
       });
+      throw error; // Re-throw so calling components can handle it
     }
   };
 
