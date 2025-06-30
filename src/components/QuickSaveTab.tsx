@@ -1,9 +1,9 @@
 
-import { useState, useRef } from 'react';
-import { Mic, Square, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { getCurrentUser } from '@/utils/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import VoiceRecorder from './claim-it/VoiceRecorder';
 
 interface QuickSaveTabProps {
@@ -15,6 +15,7 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const existingCategories = [
     'Art & Design',
@@ -38,8 +39,7 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
       return;
     }
 
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
+    if (!user) {
       toast({
         title: "Error", 
         description: "You need to be logged in to save ideas",
@@ -55,7 +55,9 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
         .from('ideas')
         .insert({
           idea: idea.trim(),
-          name: currentUser,
+          user_id: user.id,
+          name: user.user_metadata?.name || user.email,
+          original_name: user.user_metadata?.name || user.email,
           category: category || null,
           status: 'proposed',
           upvotes: []

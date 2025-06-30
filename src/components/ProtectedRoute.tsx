@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
-import { getCurrentUser, UserName } from '@/utils/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '@/components/dashboard/LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -8,24 +9,26 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const [user, setUser] = useState<UserName | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    if (!currentUser) {
-      window.location.href = '/login';
-      return;
+    if (!loading && !user && !isRedirecting) {
+      setIsRedirecting(true);
+      navigate('/auth');
     }
-    setUser(currentUser);
-    setIsLoading(false);
-  }, []);
+  }, [user, loading, navigate, isRedirecting]);
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner />;
   }
 
-  return user ? <>{children}</> : null;
+  if (!user) {
+    return <LoadingSpinner />;
+  }
+
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

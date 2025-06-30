@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { getCurrentUser } from '@/utils/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UpvoteButtonProps {
   ideaId: string;
@@ -15,18 +15,18 @@ interface UpvoteButtonProps {
 const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  
-  const currentUser = getCurrentUser();
+  const { user } = useAuth();
   
   // Ensure upvotes is always an array
   const safeUpvotes = upvotes || [];
-  const hasUpvoted = currentUser ? safeUpvotes.includes(currentUser) : false;
+  const currentUserName = user?.user_metadata?.name || user?.email || '';
+  const hasUpvoted = currentUserName ? safeUpvotes.includes(currentUserName) : false;
   const upvoteCount = safeUpvotes.length;
 
-  console.log('UpvoteButton render:', { ideaId, upvotes: safeUpvotes, hasUpvoted, upvoteCount, currentUser });
+  console.log('UpvoteButton render:', { ideaId, upvotes: safeUpvotes, hasUpvoted, upvoteCount, currentUserName });
 
   const handleUpvote = async () => {
-    if (!currentUser) {
+    if (!user) {
       toast({
         title: "Error",
         description: "You need to be logged in to vote",
@@ -45,11 +45,11 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
       
       if (hasUpvoted) {
         // Remove upvote
-        newUpvotes = safeUpvotes.filter(name => name !== currentUser);
+        newUpvotes = safeUpvotes.filter(name => name !== currentUserName);
         console.log('❌ Removing upvote, new upvotes:', newUpvotes);
       } else {
         // Add upvote
-        newUpvotes = [...safeUpvotes, currentUser];
+        newUpvotes = [...safeUpvotes, currentUserName];
         console.log('✅ Adding upvote, new upvotes:', newUpvotes);
       }
 
@@ -92,7 +92,7 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
         variant="ghost"
         size="sm"
         onClick={handleUpvote}
-        disabled={isLoading || !currentUser}
+        disabled={isLoading || !user}
         className={`h-8 px-2 transition-colors ${
           hasUpvoted 
             ? 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30' 

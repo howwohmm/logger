@@ -1,29 +1,32 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Plus, BarChart3, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import IdeaModal from '../components/IdeaModal';
 import DarkModeToggle from '../components/DarkModeToggle';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { getCurrentUser, clearCurrentUser } from '@/utils/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
 
-  useEffect(() => {
-    setCurrentUser(getCurrentUser());
-  }, []);
-
-  const handleLogout = () => {
-    clearCurrentUser();
-    toast({
-      title: "Logged out",
-      description: "See you next time!",
-    });
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "See you next time!",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -31,9 +34,9 @@ const Index = () => {
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         {/* Header with user info and controls */}
         <header className="absolute top-4 right-4 flex items-center gap-3">
-          {currentUser && (
+          {user?.user_metadata?.name && (
             <span className="text-sm text-gray-500 font-light">
-              Welcome, {currentUser}
+              Welcome, {user.user_metadata.name}
             </span>
           )}
           <button
