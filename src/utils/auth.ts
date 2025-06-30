@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export type UserName = string;
@@ -21,21 +22,4 @@ export const validateCodeword = async (codeword: string): Promise<UserName | nul
     console.error('Error validating codeword:', error);
     return null;
   }
-};
-
-// Legacy functions - keeping for backward compatibility
-export const getCurrentUser = (): UserName | null => {
-  return null; // Authentication now handled by AuthContext
-};
-
-export const setCurrentUser = (name: UserName): void => {
-  // No-op - authentication now handled by AuthContext
-};
-
-export const clearCurrentUser = (): void => {
-  // No-op - authentication now handled by AuthContext
-};
-
-export const requireAuth = (): UserName | null => {
-  return null; // Authentication now handled by AuthContext
 };
