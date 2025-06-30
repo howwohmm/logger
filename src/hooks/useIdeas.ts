@@ -62,6 +62,14 @@ export const useIdeas = () => {
     }
   };
 
+  const updateIdeaUpvotes = (ideaId: string, newUpvotes: string[]) => {
+    setIdeas(prev => prev.map(idea => 
+      idea.id === ideaId 
+        ? { ...idea, upvotes: newUpvotes }
+        : idea
+    ));
+  };
+
   const deleteIdea = async (ideaId: string) => {
     try {
       const { error } = await supabase
@@ -96,6 +104,7 @@ export const useIdeas = () => {
     setIdeas,
     isLoading,
     updateIdeaStatus,
+    updateIdeaUpvotes,
     deleteIdea,
     fetchIdeas
   };

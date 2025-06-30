@@ -19,6 +19,7 @@ export type Database = {
           original_name: string | null
           status: string | null
           updated_at: string
+          upvotes: string[] | null
         }
         Insert: {
           category?: string | null
@@ -29,6 +30,7 @@ export type Database = {
           original_name?: string | null
           status?: string | null
           updated_at?: string
+          upvotes?: string[] | null
         }
         Update: {
           category?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           original_name?: string | null
           status?: string | null
           updated_at?: string
+          upvotes?: string[] | null
         }
         Relationships: []
       }

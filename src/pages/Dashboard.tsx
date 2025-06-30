@@ -16,6 +16,7 @@ export interface Idea {
   status: string;
   created_at: string;
   updated_at: string;
+  upvotes: string[];
 }
 
 export interface FilterState {
@@ -28,7 +29,7 @@ export interface FilterState {
 }
 
 const Dashboard = () => {
-  const { ideas, isLoading, updateIdeaStatus, deleteIdea } = useIdeas();
+  const { ideas, isLoading, updateIdeaStatus, updateIdeaUpvotes, deleteIdea } = useIdeas();
   const { filteredIdeas, filters, setFilters } = useIdeasFilter(ideas);
 
   if (isLoading) {
@@ -51,6 +52,7 @@ const Dashboard = () => {
         <IdeasTable 
           ideas={filteredIdeas}
           onStatusUpdate={updateIdeaStatus}
+          onUpvoteUpdate={updateIdeaUpvotes}
           onDelete={deleteIdea}
         />
       </div>

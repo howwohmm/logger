@@ -15,14 +15,16 @@ import ContributorCell from './table/ContributorCell';
 import StatusCell from './table/StatusCell';
 import IdeaCell from './table/IdeaCell';
 import ActionsCell from './table/ActionsCell';
+import UpvoteButton from './table/UpvoteButton';
 
 interface IdeasTableProps {
   ideas: Idea[];
   onStatusUpdate: (ideaId: string, newStatus: string) => void;
+  onUpvoteUpdate: (ideaId: string, newUpvotes: string[]) => void;
   onDelete: (ideaId: string) => void;
 }
 
-const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
+const IdeasTable = ({ ideas, onStatusUpdate, onUpvoteUpdate, onDelete }: IdeasTableProps) => {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -68,6 +70,7 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
               <TableHead className="font-light text-gray-700 dark:text-gray-300">Status</TableHead>
               <TableHead className="font-light text-gray-700 dark:text-gray-300">Contributor</TableHead>
               <TableHead className="font-light text-gray-700 dark:text-gray-300">Category</TableHead>
+              <TableHead className="font-light text-gray-700 dark:text-gray-300">Upvotes</TableHead>
               <TableHead className="font-light text-gray-700 dark:text-gray-300">Created</TableHead>
               <TableHead className="font-light text-gray-700 dark:text-gray-300">Actions</TableHead>
             </TableRow>
@@ -107,6 +110,14 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
                   ) : (
                     <span className="text-gray-400 font-light text-sm">—</span>
                   )}
+                </TableCell>
+
+                <TableCell>
+                  <UpvoteButton
+                    ideaId={idea.id}
+                    upvotes={idea.upvotes || []}
+                    onUpvoteUpdate={onUpvoteUpdate}
+                  />
                 </TableCell>
                 
                 <TableCell>
