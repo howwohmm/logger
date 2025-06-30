@@ -15,7 +15,7 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
   const [category, setCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, updateActivity } = useAuth();
 
   const existingCategories = [
     'Art & Design',
@@ -29,6 +29,9 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Update activity on user interaction
+    updateActivity();
     
     if (!idea.trim()) {
       toast({
@@ -51,10 +54,10 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
     setIsLoading(true);
     
     try {
-      // For codeword authentication, we don't use user_id since it's not a real UUID
-      // Instead, we'll store the contributor name directly
-      const isCodewordAuth = user.email?.includes('@artgonic.local');
-      
+      // Determine contributor role based on name
+      const contributorRole = (user.user_metadata?.name?.toLowerCase() === 'varsha' || 
+                             user.user_metadata?.name?.toLowerCase() === 'ohm') ? 'admin' : 'contributor';
+
       const ideaData = {
         idea: idea.trim(),
         name: user.user_metadata?.name || user.email,
@@ -62,8 +65,7 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
         category: category || null,
         status: 'proposed',
         upvotes: [],
-        // Only set user_id for real Supabase users, not codeword users
-        ...(isCodewordAuth ? {} : { user_id: user.id })
+        contributor_role: contributorRole
       };
 
       console.log('🚀 Saving idea with data:', ideaData);
@@ -96,6 +98,7 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
 
   const handleTranscription = (text: string) => {
     setIdea(text);
+    updateActivity();
   };
 
   return (
@@ -103,7 +106,10 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
       <div>
         <textarea
           value={idea}
-          onChange={(e) => setIdea(e.target.value)}
+          onChange={(e) => {
+            setIdea(e.target.value);
+            updateActivity();
+          }}
           placeholder="What's your idea? (No character limit - write as much as you want!)"
           className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out resize-none"
           rows={6}
@@ -116,7 +122,10 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
       <div className="relative">
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            updateActivity();
+          }}
           className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out"
           disabled={isLoading}
         >

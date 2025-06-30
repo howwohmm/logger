@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Plus, BarChart3, LogOut } from 'lucide-react';
+import { Plus, BarChart3, LogOut, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import IdeaModal from '../components/IdeaModal';
 import DarkModeToggle from '../components/DarkModeToggle';
@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateActivity } = useAuth();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -29,15 +29,22 @@ const Index = () => {
     }
   };
 
+  const handleUserInteraction = () => {
+    updateActivity();
+  };
+
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="min-h-screen bg-background text-foreground flex flex-col" onClick={handleUserInteraction}>
         {/* Header with user info and controls */}
         <header className="absolute top-4 right-4 flex items-center gap-3">
           {user?.user_metadata?.name && (
-            <span className="text-sm text-gray-500 font-light">
-              Welcome, {user.user_metadata.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <Clock size={14} strokeWidth={1} className="text-gray-400" />
+              <span className="text-sm text-gray-500 font-light">
+                Welcome, {user.user_metadata.name}
+              </span>
+            </div>
           )}
           <button
             onClick={handleLogout}
@@ -76,7 +83,7 @@ const Index = () => {
 
         {/* Footer */}
         <footer className="text-center p-4 text-sm text-gray-500 font-light">
-          Creator Idea Logger
+          Creator Idea Logger • Auto-logout after 5min inactivity
         </footer>
 
         {/* Modal */}

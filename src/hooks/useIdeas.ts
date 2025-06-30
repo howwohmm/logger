@@ -2,16 +2,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { Idea } from '@/pages/Dashboard';
 
 export const useIdeas = () => {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { updateActivity } = useAuth();
 
   const fetchIdeas = async () => {
     try {
       console.log('Fetching ideas from database...');
+      updateActivity();
+      
       const { data, error } = await supabase
         .from('ideas')
         .select('*')
@@ -46,6 +50,8 @@ export const useIdeas = () => {
 
   const updateIdeaStatus = async (ideaId: string, newStatus: string) => {
     try {
+      updateActivity();
+      
       const { error } = await supabase
         .from('ideas')
         .update({ 
@@ -80,6 +86,8 @@ export const useIdeas = () => {
     console.log('🔄 updateIdeaUpvotes called with:', { ideaId, newUpvotes });
     console.log('🔄 Current ideas state before update:', ideas.map(i => ({ id: i.id, upvotes: i.upvotes })));
     
+    updateActivity();
+    
     setIdeas(prev => {
       const updated = prev.map(idea => 
         idea.id === ideaId 
@@ -93,6 +101,8 @@ export const useIdeas = () => {
 
   const deleteIdea = async (ideaId: string) => {
     try {
+      updateActivity();
+      
       const { error } = await supabase
         .from('ideas')
         .delete()

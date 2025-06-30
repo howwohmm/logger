@@ -33,6 +33,7 @@ export type Database = {
       ideas: {
         Row: {
           category: string | null
+          contributor_role: string | null
           created_at: string
           id: string
           idea: string
@@ -45,6 +46,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          contributor_role?: string | null
           created_at?: string
           id?: string
           idea: string
@@ -57,6 +59,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          contributor_role?: string | null
           created_at?: string
           id?: string
           idea?: string
@@ -69,24 +72,24 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      user_sessions: {
         Row: {
           created_at: string
           id: string
-          name: string
-          updated_at: string
+          last_activity: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          id: string
-          name: string
-          updated_at?: string
+          id?: string
+          last_activity?: string
+          user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          name?: string
-          updated_at?: string
+          last_activity?: string
+          user_id?: string
         }
         Relationships: []
       }
