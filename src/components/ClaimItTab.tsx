@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Mic, Square, Send, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ClaimItTabProps {
   onSuccess: () => void;
@@ -100,30 +101,28 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          idea: idea.trim(),
-          name: name.trim(),
-          category: category.trim() || null,
-        }),
-      });
+      const { data, error } = await supabase
+        .from('ideas')
+        .insert([
+          {
+            idea: idea.trim(),
+            name: name.trim(),
+            category: category.trim() || null,
+          }
+        ]);
 
-      if (response.ok) {
-        toast({
-          title: "Claimed ✓",
-          description: "Idea logged with your name",
-        });
-        setIdea('');
-        setName('');
-        setCategory('');
-        onSuccess();
-      } else {
-        throw new Error('Failed to save idea');
+      if (error) {
+        throw error;
       }
+
+      toast({
+        title: "Claimed ✓",
+        description: "Idea logged with your name",
+      });
+      setIdea('');
+      setName('');
+      setCategory('');
+      onSuccess();
     } catch (error) {
       console.error('Save error:', error);
       toast({

@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Mic, Square, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuickSaveTabProps {
   onSuccess: () => void;
@@ -86,28 +87,26 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          idea: idea.trim(),
-          name: null,
-          category: null,
-        }),
-      });
+      const { data, error } = await supabase
+        .from('ideas')
+        .insert([
+          {
+            idea: idea.trim(),
+            name: null,
+            category: null,
+          }
+        ]);
 
-      if (response.ok) {
-        toast({
-          title: "Saved ✓",
-          description: "Idea logged successfully",
-        });
-        setIdea('');
-        onSuccess();
-      } else {
-        throw new Error('Failed to save idea');
+      if (error) {
+        throw error;
       }
+
+      toast({
+        title: "Saved ✓",
+        description: "Idea logged successfully",
+      });
+      setIdea('');
+      onSuccess();
     } catch (error) {
       console.error('Save error:', error);
       toast({
