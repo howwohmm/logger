@@ -1,7 +1,5 @@
 
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   Table, 
   TableBody, 
@@ -10,22 +8,13 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { 
-  MoreHorizontal, 
-  Edit3, 
-  Trash2, 
-  Calendar, 
-  User, 
-  Tag 
-} from 'lucide-react';
+import { Calendar, Tag, Edit3 } from 'lucide-react';
 import { Idea } from '@/pages/Dashboard';
 import EditIdeaModal from './EditIdeaModal';
+import ContributorCell from './table/ContributorCell';
+import StatusCell from './table/StatusCell';
+import IdeaCell from './table/IdeaCell';
+import ActionsCell from './table/ActionsCell';
 
 interface IdeasTableProps {
   ideas: Idea[];
@@ -36,13 +25,6 @@ interface IdeasTableProps {
 const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-
-  const statusConfig = {
-    'proposed': { label: 'Proposed', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-    'in-progress': { label: 'In Progress', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' },
-    'completed': { label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-    'parked': { label: 'Parked', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  };
 
   const toggleRowExpansion = (ideaId: string) => {
     const newExpanded = new Set(expandedRows);
@@ -62,46 +44,6 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  const truncateText = (text: string, maxLength: number = 100) => {
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-  };
-
-  const renderContributorName = (idea: Idea) => {
-    const displayName = idea.name || 'Anonymous';
-    const originalName = idea.original_name;
-    
-    // If there's an original name and it's different from the display name, show tooltip
-    if (originalName && originalName !== displayName) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 cursor-help">
-                <User size={14} strokeWidth={1} className="text-gray-400" />
-                <span className="font-light text-sm underline decoration-dotted decoration-gray-400">
-                  {displayName}
-                </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="font-light">Originally entered as: {originalName}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-    
-    // No original name or same as display name
-    return (
-      <div className="flex items-center gap-2">
-        <User size={14} strokeWidth={1} className="text-gray-400" />
-        <span className="font-light text-sm">
-          {displayName}
-        </span>
-      </div>
-    );
   };
 
   if (ideas.length === 0) {
@@ -137,46 +79,23 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
                 className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
               >
                 <TableCell className="max-w-md">
-                  <div className="font-light">
-                    <div 
-                      className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      onClick={() => toggleRowExpansion(idea.id)}
-                    >
-                      {expandedRows.has(idea.id) ? idea.idea : truncateText(idea.idea)}
-                    </div>
-                    {idea.idea.length > 100 && (
-                      <button
-                        onClick={() => toggleRowExpansion(idea.id)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
-                      >
-                        {expandedRows.has(idea.id) ? 'Show less' : 'Show more'}
-                      </button>
-                    )}
-                  </div>
+                  <IdeaCell 
+                    idea={idea.idea}
+                    ideaId={idea.id}
+                    expandedRows={expandedRows}
+                    onToggleExpansion={toggleRowExpansion}
+                  />
                 </TableCell>
                 
                 <TableCell>
-                  <select
-                    value={idea.status}
-                    onChange={(e) => onStatusUpdate(idea.id, e.target.value)}
-                    className="text-xs font-light border-0 bg-transparent focus:outline-none cursor-pointer"
-                  >
-                    {Object.entries(statusConfig).map(([value, config]) => (
-                      <option key={value} value={value}>
-                        {config.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Badge 
-                    variant="outline" 
-                    className={`ml-2 text-xs font-light ${statusConfig[idea.status as keyof typeof statusConfig]?.color}`}
-                  >
-                    {statusConfig[idea.status as keyof typeof statusConfig]?.label || idea.status}
-                  </Badge>
+                  <StatusCell 
+                    status={idea.status}
+                    onStatusUpdate={(newStatus) => onStatusUpdate(idea.id, newStatus)}
+                  />
                 </TableCell>
                 
                 <TableCell>
-                  {renderContributorName(idea)}
+                  <ContributorCell idea={idea} />
                 </TableCell>
                 
                 <TableCell>
@@ -198,28 +117,11 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
                 </TableCell>
                 
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEditingIdea(idea)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit3 size={14} strokeWidth={1} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (confirm('Are you sure you want to delete this idea?')) {
-                          onDelete(idea.id);
-                        }
-                      }}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30"
-                    >
-                      <Trash2 size={14} strokeWidth={1} />
-                    </Button>
-                  </div>
+                  <ActionsCell 
+                    idea={idea}
+                    onEdit={setEditingIdea}
+                    onDelete={onDelete}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -232,10 +134,7 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
           idea={editingIdea}
           isOpen={!!editingIdea}
           onClose={() => setEditingIdea(null)}
-          onSave={() => {
-            // Refresh will happen through the parent component
-            setEditingIdea(null);
-          }}
+          onSave={() => setEditingIdea(null)}
         />
       )}
     </>
