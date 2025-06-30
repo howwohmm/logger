@@ -10,6 +10,12 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { 
   MoreHorizontal, 
   Edit3, 
@@ -60,6 +66,42 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
 
   const truncateText = (text: string, maxLength: number = 100) => {
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  };
+
+  const renderContributorName = (idea: Idea) => {
+    const displayName = idea.name || 'Anonymous';
+    const originalName = idea.original_name;
+    
+    // If there's an original name and it's different from the display name, show tooltip
+    if (originalName && originalName !== displayName) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 cursor-help">
+                <User size={14} strokeWidth={1} className="text-gray-400" />
+                <span className="font-light text-sm underline decoration-dotted decoration-gray-400">
+                  {displayName}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-light">Originally entered as: {originalName}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    // No original name or same as display name
+    return (
+      <div className="flex items-center gap-2">
+        <User size={14} strokeWidth={1} className="text-gray-400" />
+        <span className="font-light text-sm">
+          {displayName}
+        </span>
+      </div>
+    );
   };
 
   if (ideas.length === 0) {
@@ -134,12 +176,7 @@ const IdeasTable = ({ ideas, onStatusUpdate, onDelete }: IdeasTableProps) => {
                 </TableCell>
                 
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User size={14} strokeWidth={1} className="text-gray-400" />
-                    <span className="font-light text-sm">
-                      {idea.name || 'Anonymous'}
-                    </span>
-                  </div>
+                  {renderContributorName(idea)}
                 </TableCell>
                 
                 <TableCell>

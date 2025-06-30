@@ -12,6 +12,7 @@ export interface Idea {
   id: string;
   idea: string;
   name: string | null;
+  original_name: string | null;
   category: string | null;
   status: string;
   created_at: string;

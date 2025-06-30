@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { Mic, Square, Send, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { mapNameToCanonical, getNameSuggestions } from '@/utils/nameUtils';
 
 interface ClaimItTabProps {
   onSuccess: () => void;
@@ -13,6 +14,7 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showNameDropdown, setShowNameDropdown] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -29,6 +31,9 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
     'Product Ideas',
     'Content Creation'
   ];
+
+  // Get name suggestions based on current input
+  const nameSuggestions = getNameSuggestions(name);
 
   const startRecording = async () => {
     try {
@@ -101,12 +106,16 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
 
     setIsLoading(true);
     try {
+      // Map the name to canonical form
+      const nameMapping = mapNameToCanonical(name);
+      
       const { data, error } = await supabase
         .from('ideas')
         .insert([
           {
             idea: idea.trim(),
-            name: name.trim(),
+            name: nameMapping.canonical || nameMapping.original,
+            original_name: nameMapping.original,
             category: category.trim() || null,
           }
         ]);
@@ -117,7 +126,7 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
 
       toast({
         title: "Claimed ✓",
-        description: "Idea logged with your name",
+        description: `Idea logged with your name${nameMapping.canonical && nameMapping.canonical !== nameMapping.original ? ` (matched to ${nameMapping.canonical})` : ''}`,
       });
       setIdea('');
       setName('');
@@ -169,16 +178,42 @@ const ClaimItTab = ({ onSuccess }: ClaimItTabProps) => {
         </button>
       </div>
 
-      {/* Name input */}
-      <div>
+      {/* Name input with autocomplete */}
+      <div className="relative">
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setShowNameDropdown(true);
+          }}
+          onFocus={() => setShowNameDropdown(true)}
+          onBlur={() => {
+            // Delay hiding to allow clicks on dropdown items
+            setTimeout(() => setShowNameDropdown(false), 200);
+          }}
           placeholder="Your name"
           className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out"
           disabled={isLoading}
         />
+        
+        {showNameDropdown && nameSuggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 bg-background border-hair border-gray-500 rounded-lg z-20 animate-fade-slide-in max-h-40 overflow-y-auto">
+            {nameSuggestions.map((suggestion, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => {
+                  setName(suggestion);
+                  setShowNameDropdown(false);
+                }}
+                className="w-full p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-900 transition-all duration-150 ease-in-out font-light border-b border-gray-200 dark:border-gray-800 last:border-b-0"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Category dropdown */}
