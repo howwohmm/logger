@@ -17,20 +17,28 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
   
   // For now, we'll use a simple user identifier. In a real app with auth, this would be the user's ID
   const userId = 'anonymous-user';
-  const hasUpvoted = upvotes.includes(userId);
-  const upvoteCount = upvotes.length;
+  
+  // Ensure upvotes is always an array
+  const safeUpvotes = upvotes || [];
+  const hasUpvoted = safeUpvotes.includes(userId);
+  const upvoteCount = safeUpvotes.length;
+
+  console.log('UpvoteButton render:', { ideaId, upvotes: safeUpvotes, hasUpvoted, upvoteCount });
 
   const handleUpvote = async () => {
+    console.log('Upvote clicked for idea:', ideaId);
     setIsLoading(true);
     try {
       let newUpvotes: string[];
       
       if (hasUpvoted) {
         // Remove upvote
-        newUpvotes = upvotes.filter(id => id !== userId);
+        newUpvotes = safeUpvotes.filter(id => id !== userId);
+        console.log('Removing upvote, new upvotes:', newUpvotes);
       } else {
         // Add upvote
-        newUpvotes = [...upvotes, userId];
+        newUpvotes = [...safeUpvotes, userId];
+        console.log('Adding upvote, new upvotes:', newUpvotes);
       }
 
       const { error } = await supabase
@@ -38,8 +46,12 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
         .update({ upvotes: newUpvotes })
         .eq('id', ideaId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Successfully updated upvotes in database');
       onUpvoteUpdate(ideaId, newUpvotes);
       
       toast({
@@ -65,19 +77,19 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
         size="sm"
         onClick={handleUpvote}
         disabled={isLoading}
-        className={`h-8 px-2 ${
+        className={`h-8 px-2 transition-colors ${
           hasUpvoted 
             ? 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950/30' 
             : 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30'
         }`}
       >
         <Heart 
-          size={14} 
-          strokeWidth={1} 
+          size={16} 
+          strokeWidth={1.5} 
           fill={hasUpvoted ? 'currentColor' : 'none'}
         />
       </Button>
-      <span className="text-sm text-gray-500 font-light min-w-[1rem]">
+      <span className="text-sm text-gray-500 font-medium min-w-[1.5rem] text-center">
         {upvoteCount}
       </span>
     </div>

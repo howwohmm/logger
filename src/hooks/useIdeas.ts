@@ -11,13 +11,27 @@ export const useIdeas = () => {
 
   const fetchIdeas = async () => {
     try {
+      console.log('Fetching ideas from database...');
       const { data, error } = await supabase
         .from('ideas')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setIdeas(data || []);
+      if (error) {
+        console.error('Error fetching ideas:', error);
+        throw error;
+      }
+      
+      console.log('Fetched ideas:', data);
+      
+      // Ensure upvotes field is always an array
+      const processedData = data?.map(idea => ({
+        ...idea,
+        upvotes: idea.upvotes || []
+      })) || [];
+      
+      console.log('Processed ideas with upvotes:', processedData);
+      setIdeas(processedData);
     } catch (error) {
       console.error('Error fetching ideas:', error);
       toast({
@@ -63,6 +77,7 @@ export const useIdeas = () => {
   };
 
   const updateIdeaUpvotes = (ideaId: string, newUpvotes: string[]) => {
+    console.log('Updating idea upvotes in state:', { ideaId, newUpvotes });
     setIdeas(prev => prev.map(idea => 
       idea.id === ideaId 
         ? { ...idea, upvotes: newUpvotes }
