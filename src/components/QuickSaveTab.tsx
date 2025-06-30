@@ -95,9 +95,9 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
         <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
-          placeholder="What's your idea?"
+          placeholder="What's your idea? (No character limit - write as much as you want!)"
           className="w-full p-3 border-hair border-gray-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white bg-background font-light transition-all duration-150 ease-in-out resize-none"
-          rows={4}
+          rows={6}
           disabled={isLoading}
         />
       </div>

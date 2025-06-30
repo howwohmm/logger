@@ -1,25 +1,29 @@
-// Legacy auth utilities - keeping for backward compatibility
-// but authentication is now handled through AuthContext
+import { supabase } from '@/integrations/supabase/client';
 
-// Codeword mapping for the 7 contributors
-const CODEWORDS = {
-  zen: 'Om',
-  tears: 'Keerthi', 
-  ex: 'Shan',
-  rainbow: 'Varsha',
-  niggendra: 'Vishal',
-  coffee: 'Harrison',
-  sunday: 'Sharika'
-} as const;
+export type UserName = string;
 
-export type UserName = typeof CODEWORDS[keyof typeof CODEWORDS];
+export const validateCodeword = async (codeword: string): Promise<UserName | null> => {
+  try {
+    const normalizedCodeword = codeword.toLowerCase().trim();
+    
+    const { data, error } = await supabase
+      .from('codewords')
+      .select('contributor_name')
+      .eq('codeword', normalizedCodeword)
+      .single();
 
-export const validateCodeword = (codeword: string): UserName | null => {
-  const normalizedCodeword = codeword.toLowerCase().trim();
-  return CODEWORDS[normalizedCodeword as keyof typeof CODEWORDS] || null;
+    if (error || !data) {
+      return null;
+    }
+
+    return data.contributor_name;
+  } catch (error) {
+    console.error('Error validating codeword:', error);
+    return null;
+  }
 };
 
-// Legacy functions - will be removed once migration is complete
+// Legacy functions - keeping for backward compatibility
 export const getCurrentUser = (): UserName | null => {
   return null; // Authentication now handled by AuthContext
 };
