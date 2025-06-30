@@ -51,17 +51,26 @@ const QuickSaveTab = ({ onSuccess }: QuickSaveTabProps) => {
     setIsLoading(true);
     
     try {
+      // For codeword authentication, we don't use user_id since it's not a real UUID
+      // Instead, we'll store the contributor name directly
+      const isCodewordAuth = user.email?.includes('@artgonic.local');
+      
+      const ideaData = {
+        idea: idea.trim(),
+        name: user.user_metadata?.name || user.email,
+        original_name: user.user_metadata?.name || user.email,
+        category: category || null,
+        status: 'proposed',
+        upvotes: [],
+        // Only set user_id for real Supabase users, not codeword users
+        ...(isCodewordAuth ? {} : { user_id: user.id })
+      };
+
+      console.log('🚀 Saving idea with data:', ideaData);
+
       const { error } = await supabase
         .from('ideas')
-        .insert({
-          idea: idea.trim(),
-          user_id: user.id,
-          name: user.user_metadata?.name || user.email,
-          original_name: user.user_metadata?.name || user.email,
-          category: category || null,
-          status: 'proposed',
-          upvotes: []
-        });
+        .insert(ideaData);
 
       if (error) throw error;
 
