@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +20,15 @@ export default {
 		},
 		extend: {
 			colors: {
+				// Pure B/W/Gray palette
+				black: '#000000',
+				gray: {
+					900: '#111111',
+					700: '#333333',
+					500: '#666666',
+					100: '#ffffff'
+				},
+				white: '#ffffff',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -52,43 +62,60 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				}
+			},
+			fontFamily: {
+				inter: ['Inter', 'sans-serif'],
 			},
 			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				lg: '8px',
+				md: '8px',
+				sm: '8px'
+			},
+			spacing: {
+				'4': '16px',
+			},
+			transitionDuration: {
+				'150': '150ms',
+			},
+			transitionTimingFunction: {
+				'ease-in-out': 'ease-in-out',
 			},
 			keyframes: {
-				'accordion-down': {
-					from: {
-						height: '0'
+				'fade-slide-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(8px)'
 					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
 					}
 				},
-				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
+				'fade-slide-out': {
+					'0%': {
+						opacity: '1',
+						transform: 'translateY(0)'
 					},
-					to: {
-						height: '0'
+					'100%': {
+						opacity: '0',
+						transform: 'translateY(8px)'
+					}
+				},
+				'pulse-record': {
+					'0%, 100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						opacity: '0.7',
+						transform: 'scale(1.05)'
 					}
 				}
 			},
 			animation: {
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'fade-slide-in': 'fade-slide-in 150ms ease-in-out',
+				'fade-slide-out': 'fade-slide-out 150ms ease-in-out',
+				'pulse-record': 'pulse-record 1.5s infinite'
 			}
 		}
 	},
