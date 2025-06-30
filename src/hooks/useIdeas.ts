@@ -77,12 +77,18 @@ export const useIdeas = () => {
   };
 
   const updateIdeaUpvotes = (ideaId: string, newUpvotes: string[]) => {
-    console.log('Updating idea upvotes in state:', { ideaId, newUpvotes });
-    setIdeas(prev => prev.map(idea => 
-      idea.id === ideaId 
-        ? { ...idea, upvotes: newUpvotes }
-        : idea
-    ));
+    console.log('🔄 updateIdeaUpvotes called with:', { ideaId, newUpvotes });
+    console.log('🔄 Current ideas state before update:', ideas.map(i => ({ id: i.id, upvotes: i.upvotes })));
+    
+    setIdeas(prev => {
+      const updated = prev.map(idea => 
+        idea.id === ideaId 
+          ? { ...idea, upvotes: newUpvotes }
+          : idea
+      );
+      console.log('🔄 Updated ideas state:', updated.map(i => ({ id: i.id, upvotes: i.upvotes })));
+      return updated;
+    });
   };
 
   const deleteIdea = async (ideaId: string) => {

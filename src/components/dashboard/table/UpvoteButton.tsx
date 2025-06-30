@@ -26,7 +26,10 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
   console.log('UpvoteButton render:', { ideaId, upvotes: safeUpvotes, hasUpvoted, upvoteCount });
 
   const handleUpvote = async () => {
-    console.log('Upvote clicked for idea:', ideaId);
+    console.log('🚀 Upvote clicked for idea:', ideaId);
+    console.log('🚀 Current upvotes before action:', safeUpvotes);
+    console.log('🚀 Has upvoted before action:', hasUpvoted);
+    
     setIsLoading(true);
     try {
       let newUpvotes: string[];
@@ -34,12 +37,14 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
       if (hasUpvoted) {
         // Remove upvote
         newUpvotes = safeUpvotes.filter(id => id !== userId);
-        console.log('Removing upvote, new upvotes:', newUpvotes);
+        console.log('❌ Removing upvote, new upvotes:', newUpvotes);
       } else {
         // Add upvote
         newUpvotes = [...safeUpvotes, userId];
-        console.log('Adding upvote, new upvotes:', newUpvotes);
+        console.log('✅ Adding upvote, new upvotes:', newUpvotes);
       }
+
+      console.log('🔄 Updating database with:', { ideaId, newUpvotes });
 
       const { error } = await supabase
         .from('ideas')
@@ -47,11 +52,13 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
         .eq('id', ideaId);
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('❌ Supabase error:', error);
         throw error;
       }
 
-      console.log('Successfully updated upvotes in database');
+      console.log('✅ Successfully updated upvotes in database');
+      console.log('🔄 Calling onUpvoteUpdate with:', { ideaId, newUpvotes });
+      
       onUpvoteUpdate(ideaId, newUpvotes);
       
       toast({
@@ -59,7 +66,7 @@ const UpvoteButton = ({ ideaId, upvotes, onUpvoteUpdate }: UpvoteButtonProps) =>
         description: hasUpvoted ? "Your upvote has been removed" : "Thanks for your support!",
       });
     } catch (error) {
-      console.error('Upvote error:', error);
+      console.error('❌ Upvote error:', error);
       toast({
         title: "Error",
         description: "Could not update upvote",
