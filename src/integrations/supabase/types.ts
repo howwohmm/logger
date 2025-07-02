@@ -72,6 +72,81 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cost: number
+          created_at: string
+          frequency: string | null
+          id: string
+          name: string
+          next_due: string | null
+          notes: string | null
+          receipt_url: string | null
+          used_by: string[] | null
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          name: string
+          next_due?: string | null
+          notes?: string | null
+          receipt_url?: string | null
+          used_by?: string[] | null
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          name?: string
+          next_due?: string | null
+          notes?: string | null
+          receipt_url?: string | null
+          used_by?: string[] | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          contributor: string
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          receipt_url: string | null
+          split_with: string[] | null
+          tags: string[] | null
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          contributor: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          receipt_url?: string | null
+          split_with?: string[] | null
+          tags?: string[] | null
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          contributor?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          receipt_url?: string | null
+          split_with?: string[] | null
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
       user_sessions: {
         Row: {
           created_at: string
@@ -98,7 +173,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      this_month_spend: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

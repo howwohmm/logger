@@ -26,13 +26,12 @@ const Hub = () => {
           .from('ideas')
           .select('*', { count: 'exact', head: true });
 
-        // For now, we'll use placeholder for finance stats since the finance table doesn't exist yet
-        // TODO: Replace with actual finance data when finance tracker is implemented
-        const monthlyTotal = 0;
+        // Fetch monthly spending from finance tracker
+        const { data: monthlySpend } = await supabase.rpc('this_month_spend');
 
         setStats({
           ideasCount: ideasCount || 0,
-          monthlyTotal
+          monthlyTotal: Number(monthlySpend) || 0
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -78,7 +77,7 @@ const Hub = () => {
       name: 'Finance Tracker',
       icon: CreditCard,
       path: '/finance',
-      stat: loading ? 'Loading...' : `₹${stats.monthlyTotal.toLocaleString()} this month`,
+      stat: loading ? 'Loading...' : `₹${stats.monthlyTotal.toLocaleString()} spent this month`,
       description: 'Track expenses & subscriptions'
     }
   ];
