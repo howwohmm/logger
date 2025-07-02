@@ -30,7 +30,7 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You're now logged in with your codeword",
         });
-        navigate('/');
+        navigate('/hub');
       }
     } catch (error) {
       toast({
