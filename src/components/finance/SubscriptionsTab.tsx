@@ -12,7 +12,7 @@ import SubscriptionCommentsModal from './SubscriptionCommentsModal';
 import type { Subscription } from '@/hooks/useSubscriptions';
 
 const SubscriptionsTab = () => {
-  const { subscriptions, loading, addSubscription, deleteSubscription } = useSubscriptions();
+  const { subscriptions, loading, deleteSubscription } = useSubscriptions();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentsSubscription, setCommentsSubscription] = useState<Subscription | null>(null);
@@ -30,11 +30,6 @@ const SubscriptionsTab = () => {
         console.error('Error deleting subscription:', error);
       }
     }
-  };
-
-  const handleAddSubscription = async (data: any) => {
-    await addSubscription(data);
-    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -176,7 +171,6 @@ const SubscriptionsTab = () => {
       <SubscriptionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddSubscription}
       />
 
       <SubscriptionCommentsModal

@@ -12,7 +12,7 @@ import TransactionCommentsModal from './TransactionCommentsModal';
 import type { Transaction } from '@/hooks/useTransactions';
 
 const TransactionsTab = () => {
-  const { transactions, loading, addTransaction, deleteTransaction } = useTransactions();
+  const { transactions, loading, deleteTransaction } = useTransactions();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentsTransaction, setCommentsTransaction] = useState<Transaction | null>(null);
@@ -31,11 +31,6 @@ const TransactionsTab = () => {
         console.error('Error deleting transaction:', error);
       }
     }
-  };
-
-  const handleAddTransaction = async (data: any) => {
-    await addTransaction(data);
-    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -186,7 +181,6 @@ const TransactionsTab = () => {
       <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddTransaction}
       />
 
       <TransactionCommentsModal
