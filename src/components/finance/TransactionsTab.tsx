@@ -1,116 +1,196 @@
+
 import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { Plus, Search, MessageCircle, Trash2, Edit, Calendar, User, DollarSign, Tag } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTransactions } from '@/hooks/useTransactions';
-import TransactionModal from './TransactionModal';
 import { formatDate } from '@/lib/utils';
+import TransactionModal from './TransactionModal';
+import TransactionCommentsModal from './TransactionCommentsModal';
+import type { Transaction } from '@/hooks/useTransactions';
 
 const TransactionsTab = () => {
+  const { transactions, loading, addTransaction, deleteTransaction } = useTransactions();
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { transactions, loading, deleteTransaction } = useTransactions();
-  const { toast } = useToast();
+  const [commentsTransaction, setCommentsTransaction] = useState<Transaction | null>(null);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this transaction?')) return;
-    
-    try {
-      await deleteTransaction(id);
-      toast({
-        title: "Transaction deleted",
-        description: "The transaction has been removed",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete transaction",
-        variant: "destructive",
-      });
+  const filteredTransactions = transactions.filter(transaction =>
+    transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.contributor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      try {
+        await deleteTransaction(id);
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+      }
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Loading transactions...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-medium">Transactions</h2>
-        <Button onClick={() => setIsModalOpen(true)} className="btn-primary">
-          <Plus size={16} className="mr-2" />
-          New Transaction
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div>
+          <h2 className="text-2xl font-light mb-2">Transactions</h2>
+          <p className="text-muted-foreground">Track your expenses and income</p>
+        </div>
+        <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+          <Plus size={16} strokeWidth={1} />
+          Add Transaction
         </Button>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted">
-              <tr className="border-b border-border">
-                <th className="text-left p-4 font-medium">Date</th>
-                <th className="text-left p-4 font-medium">Who</th>
-                <th className="text-left p-4 font-medium">Description</th>
-                <th className="text-right p-4 font-medium">Amount</th>
-                <th className="text-left p-4 font-medium">Tags</th>
-                <th className="text-center p-4 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center p-8 text-muted-foreground">
-                    No transactions yet. Create your first one!
-                  </td>
-                </tr>
-              ) : (
-                transactions.map((transaction) => (
-                  <tr key={transaction.id} className="border-b border-border hover:bg-muted/50">
-                    <td className="p-4 text-sm">{formatDate(transaction.created_at)}</td>
-                    <td className="p-4 text-sm">{transaction.contributor}</td>
-                    <td className="p-4">
-                      <div>
-                        <div className="font-medium">{transaction.description}</div>
-                        {transaction.category && (
-                          <div className="text-sm text-muted-foreground">{transaction.category}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-4 text-right font-medium">₹{Number(transaction.amount).toLocaleString()}</td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-1">
-                        {transaction.tags?.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleDelete(transaction.id)}
-                        className="p-2 hover:bg-destructive/10 rounded transition-colors text-destructive"
-                        title="Delete transaction"
-                      >
-                        <Trash2 size={16} strokeWidth={1} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
+      {/* Search */}
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Search transactions..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      {/* Transactions List */}
+      <div className="grid gap-4">
+        {filteredTransactions.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <DollarSign size={48} strokeWidth={1} className="mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-medium mb-2">No transactions found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first transaction'}
+              </p>
+              {!searchTerm && (
+                <Button onClick={() => setIsModalOpen(true)}>
+                  <Plus size={16} strokeWidth={1} className="mr-2" />
+                  Add Transaction
+                </Button>
               )}
-            </tbody>
-          </table>
-        </div>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredTransactions.map((transaction) => (
+            <Card key={transaction.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-medium flex items-center gap-2">
+                      <DollarSign size={18} strokeWidth={1} />
+                      ${transaction.amount.toFixed(2)}
+                    </CardTitle>
+                    {transaction.description && (
+                      <p className="text-muted-foreground mt-1">{transaction.description}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCommentsTransaction(transaction)}
+                      className="text-muted-foreground hover:text-blue-600"
+                      title="View Comments"
+                    >
+                      <MessageCircle size={16} strokeWidth={1} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteTransaction(transaction.id)}
+                      className="text-muted-foreground hover:text-red-600"
+                      title="Delete Transaction"
+                    >
+                      <Trash2 size={16} strokeWidth={1} />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <User size={14} strokeWidth={1} className="text-muted-foreground" />
+                    <span className="font-medium">{transaction.contributor}</span>
+                  </div>
+                  
+                  {transaction.category && (
+                    <div className="flex items-center gap-2">
+                      <Tag size={14} strokeWidth={1} className="text-muted-foreground" />
+                      <Badge variant="secondary">{transaction.category}</Badge>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar size={14} strokeWidth={1} className="text-muted-foreground" />
+                    <span className="text-muted-foreground">{formatDate(transaction.created_at)}</span>
+                  </div>
+                </div>
+
+                {transaction.split_with && transaction.split_with.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="text-sm text-muted-foreground mb-2">Split with:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {transaction.split_with.map((person, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {person}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {transaction.tags && transaction.tags.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="text-sm text-muted-foreground mb-2">Tags:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {transaction.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {transaction.notes && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="text-sm text-muted-foreground mb-1">Notes:</div>
+                    <div className="text-sm">{transaction.notes}</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSubmit={async (data) => {
+          await addTransaction(data);
+          setIsModalOpen(false);
+        }}
+      />
+
+      <TransactionCommentsModal
+        transaction={commentsTransaction}
+        isOpen={!!commentsTransaction}
+        onClose={() => setCommentsTransaction(null)}
       />
     </div>
   );

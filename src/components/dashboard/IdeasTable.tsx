@@ -11,6 +11,7 @@ import {
 import { Calendar, Tag, Edit3 } from 'lucide-react';
 import { Idea } from '@/pages/Dashboard';
 import EditIdeaModal from './EditIdeaModal';
+import CommentsModal from './CommentsModal';
 import ContributorCell from './table/ContributorCell';
 import StatusCell from './table/StatusCell';
 import IdeaCell from './table/IdeaCell';
@@ -26,6 +27,7 @@ interface IdeasTableProps {
 
 const IdeasTable = ({ ideas, onStatusUpdate, onUpvoteUpdate, onDelete }: IdeasTableProps) => {
   const [editingIdea, setEditingIdea] = useState<Idea | null>(null);
+  const [commentsIdea, setCommentsIdea] = useState<Idea | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const toggleRowExpansion = (ideaId: string) => {
@@ -132,6 +134,7 @@ const IdeasTable = ({ ideas, onStatusUpdate, onUpvoteUpdate, onDelete }: IdeasTa
                     idea={idea}
                     onEdit={setEditingIdea}
                     onDelete={onDelete}
+                    onViewComments={setCommentsIdea}
                   />
                 </TableCell>
               </TableRow>
@@ -146,6 +149,14 @@ const IdeasTable = ({ ideas, onStatusUpdate, onUpvoteUpdate, onDelete }: IdeasTa
           isOpen={!!editingIdea}
           onClose={() => setEditingIdea(null)}
           onSave={() => setEditingIdea(null)}
+        />
+      )}
+
+      {commentsIdea && (
+        <CommentsModal
+          idea={commentsIdea}
+          isOpen={!!commentsIdea}
+          onClose={() => setCommentsIdea(null)}
         />
       )}
     </>

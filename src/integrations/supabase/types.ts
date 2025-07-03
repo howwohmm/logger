@@ -30,6 +30,38 @@ export type Database = {
         }
         Relationships: []
       }
+      idea_comments: {
+        Row: {
+          comment: string
+          commenter_name: string
+          created_at: string
+          id: string
+          idea_id: string
+        }
+        Insert: {
+          comment: string
+          commenter_name: string
+          created_at?: string
+          id?: string
+          idea_id: string
+        }
+        Update: {
+          comment?: string
+          commenter_name?: string
+          created_at?: string
+          id?: string
+          idea_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_comments_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ideas: {
         Row: {
           category: string | null
@@ -72,6 +104,38 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_comments: {
+        Row: {
+          comment: string
+          commenter_name: string
+          created_at: string
+          id: string
+          subscription_id: string
+        }
+        Insert: {
+          comment: string
+          commenter_name: string
+          created_at?: string
+          id?: string
+          subscription_id: string
+        }
+        Update: {
+          comment?: string
+          commenter_name?: string
+          created_at?: string
+          id?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_comments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           cost: number
@@ -107,6 +171,38 @@ export type Database = {
           used_by?: string[] | null
         }
         Relationships: []
+      }
+      transaction_comments: {
+        Row: {
+          comment: string
+          commenter_name: string
+          created_at: string
+          id: string
+          transaction_id: string
+        }
+        Insert: {
+          comment: string
+          commenter_name: string
+          created_at?: string
+          id?: string
+          transaction_id: string
+        }
+        Update: {
+          comment?: string
+          commenter_name?: string
+          created_at?: string
+          id?: string
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_comments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transactions: {
         Row: {
