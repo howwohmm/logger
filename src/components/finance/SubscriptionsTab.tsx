@@ -32,6 +32,11 @@ const SubscriptionsTab = () => {
     }
   };
 
+  const handleAddSubscription = async (data: any) => {
+    await addSubscription(data);
+    setIsModalOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -171,10 +176,7 @@ const SubscriptionsTab = () => {
       <SubscriptionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={async (data) => {
-          await addSubscription(data);
-          setIsModalOpen(false);
-        }}
+        onSubmit={handleAddSubscription}
       />
 
       <SubscriptionCommentsModal

@@ -17,7 +17,7 @@ interface Comment {
 interface CommentsSectionProps {
   comments: Comment[];
   loading: boolean;
-  onAddComment: (name: string, comment: string) => Promise<void>;
+  onAddComment: (name: string, comment: string) => Promise<any>;
   onDeleteComment: (id: string) => Promise<void>;
   title?: string;
 }

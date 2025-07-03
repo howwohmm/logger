@@ -33,6 +33,11 @@ const TransactionsTab = () => {
     }
   };
 
+  const handleAddTransaction = async (data: any) => {
+    await addTransaction(data);
+    setIsModalOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -181,10 +186,7 @@ const TransactionsTab = () => {
       <TransactionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={async (data) => {
-          await addTransaction(data);
-          setIsModalOpen(false);
-        }}
+        onSubmit={handleAddTransaction}
       />
 
       <TransactionCommentsModal
